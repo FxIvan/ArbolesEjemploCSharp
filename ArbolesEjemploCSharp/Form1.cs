@@ -1,0 +1,213 @@
+﻿using Microsoft.VisualBasic;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ArbolesEjemploCSharp
+{
+    public partial class Form1 : Form
+    {
+        Nodo raiz;
+        // Cuando seleccionamos en el Tree y asi podemos identificar el nodo padre
+        Nodo seleccionado;
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        // Devuelve Nodo nuevo con respecto el nombre
+        Nodo crearNodo()
+        {
+            // Para usar interaction tenemos que usar la libreria using Microsoft.VisualBasic;
+            // y agregarlo en Agregar > Referencia... > Agregar referencia > (ESM o Ensamblados)Tildamos el que dice Microsoft.VisualBasic
+            string nombre = Interaction.InputBox("Ingrese nombre del nodo");
+            return new Nodo(nombre);
+        }
+
+        void RecorridoPreOrden(Nodo n)
+        {
+            if (n == null) return;
+
+            Visitar(n);
+            RecorridoPreOrden(n.Izquierda);
+            RecorridoPreOrden(n.Derecha);
+        }
+
+        void RecorridoPostOrden(Nodo n)
+        {
+            if (n == null) return;
+
+            RecorridoPostOrden(n.Izquierda);
+            RecorridoPostOrden(n.Derecha);
+            Visitar(n);
+        }
+
+        void EvaluarArbol()
+        {
+            this.lblAltura.Text = $"Altura:{Alto(raiz)}";
+            int inicio = 0;
+            this.lblAncho.Text = $"Ancho:{Ancho(raiz,ref inicio)}";
+        }
+
+
+
+        int Ancho(Nodo n, ref int ancho)
+        {
+            if (n.Derecha == null && n.Izquierda == null)
+                ancho += 1;
+
+            if (n.Derecha != null)  Ancho(n.Derecha, ref ancho);
+            if (n.Izquierda != null)  Ancho(n.Izquierda, ref ancho);
+
+            return ancho;
+        }
+        int Alto(Nodo n)
+        {
+            if (n == null) return 0;
+
+            int izq = Alto(n.Izquierda) + 1;
+            int der = Alto(n.Derecha) + 1;
+            return Math.Max(izq, der);
+        }
+
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            // Evaluamos si la raiz ya existe
+            if (raiz != null)
+            {
+                DialogResult r = MessageBox.Show("Se eliminará el árbol, desea continuar?", "Consulta", MessageBoxButtons.YesNo);
+                if (r == DialogResult.Yes)
+                {
+                    raiz = crearNodo();
+                    
+                }
+            }
+            else
+            {
+                raiz = crearNodo();
+            }
+
+            // Recibe un parametro del nodo que quiero seleccionar y muestra el nodo seleccionado
+            CambiarSeleccion(raiz);
+            // Lleno el treView que nos permite ver la estructura
+            LlenarTreeView();
+        }
+
+
+        public void LlenarTreeView()
+        {
+            // Tiene una lista de nodos 
+            treeView1.Nodes.Clear();
+            // MostrarNodo recibe estos parametros:
+            //  CUAL ES EL NODO ACTUAL A MOSTRAR
+            //  CUAL ES EL NODO PADRE
+            //  CUAL ES EL LADO QUE YO QUIERO MOSTRAR(LADO IZQUIERDO O LADO DERECHO)
+            // EN ESTE CASO QUIERO MOSTRAR DESDE EL NODO RAIZ
+            MostrarNodo(raiz, null, string.Empty);
+            treeView1.ExpandAll(); //para mostrar el treeviee desplegado
+            EvaluarArbol();
+        }
+
+        public void MostrarNodo(Nodo n, TreeNode tnpadre, string lado)
+        {
+            if (n == null) return;
+            // Nodo memoria y TreeNodo que es lo que voy a mostrar en el TreeView
+            //
+            TreeNode nuevo = new TreeNode();
+            if (tnpadre == null && lado==String.Empty)
+            {
+                //si entra en este  if, es porque Nodo es el raiz
+                tnpadre = new TreeNode();
+                nuevo.Text = n.Nombre;
+                nuevo.Tag = n;
+                treeView1.Nodes.Add(nuevo);
+            }
+            else
+            {
+               
+                nuevo.Text = $"{lado} - {n.Nombre}";
+                nuevo.Tag = n;
+                
+                tnpadre.Nodes.Add(nuevo);
+            }
+
+            if (n.Derecha != null) MostrarNodo(n.Derecha, nuevo, "D");
+            if (n.Izquierda != null) MostrarNodo(n.Izquierda, nuevo, "I");
+        }
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            CambiarSeleccion((Nodo)e.Node.Tag);
+        }
+
+
+        void CambiarSeleccion(Nodo n)
+        {
+            seleccionado = n;
+            this.lblNombreNodo.Text = n.Nombre;
+        }
+         
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (seleccionado != null)
+            {
+                seleccionado.Derecha = crearNodo();
+                LlenarTreeView();
+            }
+            else
+                MessageBox.Show("Debe tener algun nodo seleccionado");
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (seleccionado != null)
+            {
+                seleccionado.Izquierda = crearNodo();
+                LlenarTreeView();
+            }
+            else
+                MessageBox.Show("Debe tener algun nodo seleccionado");
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            this.txtRecorrido.Text = string.Empty;
+            RecorridoInOrden(raiz);
+        }
+
+        void RecorridoInOrden(Nodo n)
+        {
+            Visitar(n);
+            if (n.Izquierda!=null)  RecorridoInOrden(n.Izquierda);
+            if (n.Derecha != null) RecorridoInOrden(n.Derecha);
+        }
+
+        void Visitar(Nodo n)
+        {
+            this.txtRecorrido.Text += "-"  + n.Nombre;
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            this.txtRecorrido.Text = string.Empty;
+            RecorridoPreOrden(raiz);
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            this.txtRecorrido.Text = string.Empty;
+            RecorridoPostOrden(raiz);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
