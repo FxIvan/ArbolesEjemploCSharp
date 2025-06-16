@@ -11,11 +11,19 @@ using System.Windows.Forms;
 
 namespace ArbolesEjemploCSharp
 {
+    /*
+     Este programa en C# con Windows Forms permite construir y visualizar un árbol binario de manera interactiva,
+     agregando nodos a la izquierda o derecha del nodo actualmente seleccionado. También muestra elárbol en un TreeView,
+     permite recorrerlo en orden, preorden y postorden, y calcula su altura y ancho.
+     */
     public partial class Form1 : Form
     {
         Nodo raiz;
-        // Cuando seleccionamos en el Tree y asi podemos identificar el nodo padre
         Nodo seleccionado;
+        /*
+         raiz: es el nodo raíz del árbol.
+         seleccionado: nodo que el usuario selecciona en el TreeView, para agregar hijos
+         */
         public Form1()
         {
             InitializeComponent();
@@ -23,6 +31,9 @@ namespace ArbolesEjemploCSharp
         // Devuelve Nodo nuevo con respecto el nombre
         Nodo crearNodo()
         {
+            /*
+             Pide al usuario un nombre por un InputBox y devuelve un nuevo nodo con ese nombre.
+            */
             // Para usar interaction tenemos que usar la libreria using Microsoft.VisualBasic;
             // y agregarlo en Agregar > Referencia... > Agregar referencia > (ESM o Ensamblados)Tildamos el que dice Microsoft.VisualBasic
             string nombre = Interaction.InputBox("Ingrese nombre del nodo");
@@ -31,6 +42,9 @@ namespace ArbolesEjemploCSharp
 
         void RecorridoPreOrden(Nodo n)
         {
+            /*
+             PreOrden: primero visita el nodo, luego el izquierdo, luego el derecho.
+             */
             if (n == null) return;
 
             Visitar(n);
@@ -40,6 +54,7 @@ namespace ArbolesEjemploCSharp
 
         void RecorridoPostOrden(Nodo n)
         {
+            // PostOrden: primero izquierdo, luego derecho, y al final el nodo actual.
             if (n == null) return;
 
             RecorridoPostOrden(n.Izquierda);
@@ -49,6 +64,7 @@ namespace ArbolesEjemploCSharp
 
         void EvaluarArbol()
         {
+            // Calcula la altura y ancho del árbol y los muestra en etiquetas (lblAltura, lblAncho).
             this.lblAltura.Text = $"Altura:{Alto(raiz)}";
             int inicio = 0;
             this.lblAncho.Text = $"Ancho:{Ancho(raiz,ref inicio)}";
@@ -58,6 +74,7 @@ namespace ArbolesEjemploCSharp
 
         int Ancho(Nodo n, ref int ancho)
         {
+            // Cuenta el número de hojas (nodos sin hijos).
             if (n.Derecha == null && n.Izquierda == null)
                 ancho += 1;
 
@@ -68,6 +85,7 @@ namespace ArbolesEjemploCSharp
         }
         int Alto(Nodo n)
         {
+            // Calcula recursivamente la profundidad del árbol (número de niveles).
             if (n == null) return 0;
 
             int izq = Alto(n.Izquierda) + 1;
@@ -78,6 +96,10 @@ namespace ArbolesEjemploCSharp
 
         private void button1_Click(object sender, EventArgs e)
         {
+            /*
+             Si ya hay una raíz, pregunta si deseas reemplazarla.
+             Luego crea la raíz, actualiza selección y repinta el TreeView.
+             */
             // Evaluamos si la raiz ya existe
             if (raiz != null)
             {
@@ -102,13 +124,10 @@ namespace ArbolesEjemploCSharp
 
         public void LlenarTreeView()
         {
-            // Tiene una lista de nodos 
+            /*
+             Limpia y reconstruye el TreeView visual.
+             */
             treeView1.Nodes.Clear();
-            // MostrarNodo recibe estos parametros:
-            //  CUAL ES EL NODO ACTUAL A MOSTRAR
-            //  CUAL ES EL NODO PADRE
-            //  CUAL ES EL LADO QUE YO QUIERO MOSTRAR(LADO IZQUIERDO O LADO DERECHO)
-            // EN ESTE CASO QUIERO MOSTRAR DESDE EL NODO RAIZ
             MostrarNodo(raiz, null, string.Empty);
             treeView1.ExpandAll(); //para mostrar el treeviee desplegado
             EvaluarArbol();
@@ -116,9 +135,13 @@ namespace ArbolesEjemploCSharp
 
         public void MostrarNodo(Nodo n, TreeNode tnpadre, string lado)
         {
+            /*
+             Construye cada nodo visualmente:
+                - Si es raíz → se agrega directo.
+                - Si no, se marca como hijo izquierdo ("I") o derecho ("D").
+                - Se usa Tag para guardar una referencia al objeto Nodo.
+             */
             if (n == null) return;
-            // Nodo memoria y TreeNodo que es lo que voy a mostrar en el TreeView
-            //
             TreeNode nuevo = new TreeNode();
             if (tnpadre == null && lado==String.Empty)
             {
@@ -149,10 +172,15 @@ namespace ArbolesEjemploCSharp
 
         void CambiarSeleccion(Nodo n)
         {
+            // Cuando seleccionas un nodo visual, se guarda como seleccionado.
             seleccionado = n;
             this.lblNombreNodo.Text = n.Nombre;
         }
-         
+
+        /*
+         button2_Click → agrega un hijo derecho al nodo seleccionado.
+         button3_Click → agrega un hijo izquierdo al nodo seleccionado.
+         */
         private void button2_Click(object sender, EventArgs e)
         {
             if (seleccionado != null)
@@ -190,6 +218,7 @@ namespace ArbolesEjemploCSharp
 
         void Visitar(Nodo n)
         {
+            // Agrega el nombre del nodo al TextBox txtRecorrido.
             this.txtRecorrido.Text += "-"  + n.Nombre;
         }
 
